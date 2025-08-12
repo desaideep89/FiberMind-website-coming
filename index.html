@@ -10,9 +10,10 @@
 
   <style>
     :root {
-      --bg: #0b0b0c;
-      --fg: #e8e8ea;
-      --muted: #b8b8bd;
+      --bg: #f8f8f8;
+      --fg: #000;
+      --muted: #555;
+      --blue: #00aaff;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -20,15 +21,28 @@
       margin: 0;
       background: var(--bg);
       color: var(--fg);
-      font-family: "League Spartan", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-family: "League Spartan", sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      overflow: hidden;
+    }
+    .background-waves {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
     }
     .wrap {
       min-height: 100%;
       display: grid;
       place-items: center;
       padding: 24px;
+      position: relative;
+      z-index: 1;
     }
     .card {
       text-align: center;
@@ -56,71 +70,73 @@
       color: var(--muted);
       letter-spacing: 0.3px;
     }
-    /* Optional subtle glow for effect reveal */
     .reveal {
       animation: glow 800ms ease-out both;
     }
     @keyframes glow {
-      0%   { text-shadow: 0 0 0px rgba(255,255,255,0); }
-      50%  { text-shadow: 0 0 8px rgba(255,255,255,0.35); }
-      100% { text-shadow: 0 0 0px rgba(255,255,255,0); }
+      0%   { text-shadow: 0 0 0px rgba(0,0,0,0); }
+      50%  { text-shadow: 0 0 8px rgba(0,0,0,0.2); }
+      100% { text-shadow: 0 0 0px rgba(0,0,0,0); }
     }
   </style>
 </head>
 <body>
+  <!-- Neon Wavy Background -->
+  <svg class="background-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="none">
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="8" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <path d="M0,300 Q360,250 720,300 T1440,300" stroke="#00aaff" stroke-width="10" fill="none" filter="url(#glow)"/>
+    <path d="M0,450 Q360,400 720,450 T1440,450" stroke="#00aaff" stroke-width="10" fill="none" filter="url(#glow)"/>
+    <path d="M0,600 Q360,550 720,600 T1440,600" stroke="#00aaff" stroke-width="10" fill="none" filter="url(#glow)"/>
+  </svg>
+
   <main class="wrap">
     <section class="card" aria-labelledby="site-title">
       <h1 id="site-title">FiberMind.AI</h1>
-
-      <!-- Three lines under the title, auto-decrypt on load -->
       <div class="lines" aria-live="polite">
-        <p class="decrypt" data-final="We’re Currently Busy Building"></p>
-        <p class="decrypt" data-final="the FIRST FOUNDATIONAL AI for fiber sensing"></p>
-        <p class="decrypt" data-final="Interested?  deep.desai@fibermind.ai"></p>
+        <p class="decrypt" data-final="We’re currently busy building"></p>
+        <p class="decrypt" data-final="the first foundational ai for fiber sensing"></p>
+        <p class="decrypt" data-final="interested?  deep.desai@fibermind.ai"></p>
       </div>
-
       <p class="hint" aria-hidden="true">© FiberMind.AI</p>
     </section>
   </main>
 
   <script>
-    // Simple auto-decrypt text effect
-    // Scrambles each line, then resolves to its final text. Runs on page load.
+    // Slower, smoother decrypt effect
     (function () {
       const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()[]{}<>?/\\|~";
       const lines = Array.from(document.querySelectorAll(".decrypt"));
 
-      // Per-line settings
-      const stepDelay = 100;       // ms between frame steps
-      const perCharSteps = 8;     // how many scramble frames each char goes through
-      const lineStagger = 100;    // ms delay between starting each line
+      const stepDelay = 70;       // slower frame rate
+      const perCharSteps = 12;    // more scramble frames per char
+      const lineStagger = 300;    // ms between lines
 
       function scrambleTo(element, finalText) {
         const length = finalText.length;
-        const frames = [];
-        // Build target frames so characters resolve progressively left-to-right
-        for (let i = 0; i < perCharSteps; i++) {
-          frames.push(i);
-        }
-
         let frame = 0;
         return new Promise((resolve) => {
           const timer = setInterval(() => {
             const out = Array.from({ length }, (_, idx) => {
-              // Decide if this index should show final char by now
               const progress = frame / perCharSteps;
               const cutoff = Math.floor(progress * length);
               if (idx <= cutoff) {
                 return finalText[idx];
               }
-              // Otherwise, show a random char for scramble
               return charset[Math.floor(Math.random() * charset.length)];
             }).join("");
 
             element.textContent = out;
             frame++;
 
-            if (frame > frames.length) {
+            if (frame > perCharSteps) {
               element.textContent = finalText;
               element.classList.add("reveal");
               clearInterval(timer);
@@ -130,12 +146,10 @@
         });
       }
 
-      // Run each line in sequence with a slight stagger
       (async function run() {
         for (let i = 0; i < lines.length; i++) {
           const el = lines[i];
           const finalText = el.getAttribute("data-final") || "";
-          // brief pre-fill with noise so it feels immediate
           el.textContent = finalText
             .split("")
             .map(ch => ch === " " ? " " : charset[Math.floor(Math.random() * charset.length)])
