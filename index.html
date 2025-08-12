@@ -115,9 +115,9 @@
       const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()[]{}<>?/\\|~";
       const lines = Array.from(document.querySelectorAll(".decrypt"));
 
-      const stepDelay = 70;       // slower frame rate
+      const stepDelay = 120;       // slower frame rate
       const perCharSteps = 12;    // more scramble frames per char
-      const lineStagger = 300;    // ms between lines
+      const lineStagger = 100;    // ms between lines
 
       function scrambleTo(element, finalText) {
         const length = finalText.length;
