@@ -91,9 +91,9 @@
       const lines = Array.from(document.querySelectorAll(".decrypt"));
 
       // Per-line settings
-      const stepDelay = 22;       // ms between frame steps
+      const stepDelay = 100;       // ms between frame steps
       const perCharSteps = 6;     // how many scramble frames each char goes through
-      const lineStagger = 200;    // ms delay between starting each line
+      const lineStagger = 100;    // ms delay between starting each line
 
       function scrambleTo(element, finalText) {
         const length = finalText.length;
