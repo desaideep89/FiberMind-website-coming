@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us - FiberMind.AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      color: #000;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin: 80px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+    form {
+      display: grid;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    input, textarea {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+    }
+    button {
+      background: linear-gradient(#c0c0c0, #a8a8a8);
+      color: white;
+      font-size: 16px;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: linear-gradient(#d0d0d0, #b0b0b0);
+    }
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Get in Touch</h1>
+  <form id="contact-form">
+    <input type="text" name="from_name" placeholder="Your Name" required />
+    <input type="email" name="reply_to" placeholder="Your Email" required />
+    <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+    <button type="submit">Send</button>
+    <div class="status" id="success"></div>
+    <div class="status" id="error"></div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  (function() {
+    emailjs.init("ksBl8QzdNnKi3X_6Z"); // Public Key
+  })();
+
+  document.getElementById('contact-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const templateParams = {
+      from_name: this.from_name.value,
+      reply_to: this.reply_to.value,
+      message: this.message.value
+    };
+
+    emailjs.send("service_o3gz1fq", "template_fsbeqkd", templateParams)
+      .then(function(response) {
+        document.getElementById('success').textContent = "Message sent successfully!";
+        document.getElementById('error').textContent = "";
+      }, function(error) {
+        document.getElementById('error').textContent = "Failed to send message. Please try again.";
+        document.getElementById('success').textContent = "";
+      });
+  });
+</script>
+
+</body>
+</html>
