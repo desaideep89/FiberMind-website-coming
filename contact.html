@@ -137,10 +137,10 @@
   </main>
 
   <!-- EmailJS browser SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>
     // Init with your public key (required)
-    emailjs.init({ publicKey: "ksBI8QzdNnKi3X_6Z" });
+  //  emailjs.init({ publicKey: "ksBL8QzdNnKi3X_6Z" });
 
     const form = document.getElementById('contact-form');
     const sendBtn = document.getElementById('sendBtn');
@@ -176,14 +176,14 @@
       };
 
       try {
-        await emailjs.send("service_o3gz1fq", "template_fsbeqkd", templateParams);
+await emailjs.send("service_o3gz1fq", "template_fsbeqkd", templateParams, "ksBl8QzdNnKi3X_6Z");
         ok.textContent = "Message sent! We’ll be in touch soon.";
         form.reset();
       } catch (e) {
-        // Surface the real error for debugging; you can replace with a generic message later
-        err.textContent = "Failed to send message. " + (e?.text || "Please try again.");
-        console.error("EmailJS error:", e);
-      } finally {
+  const msg = e?.text || e?.message || JSON.stringify(e);
+  err.textContent = "Failed to send message. " + msg;
+  console.error("EmailJS error:", e);
+} finally {
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send';
       }
