@@ -6,15 +6,28 @@
   <title>FiberMind.AI</title>
 
   <!-- League Spartan font -->
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700;800&display=swap" rel="stylesheet" />
 
   <style>
     :root{
-      --bg:#f8f8f8;    /* glossy white with slight grey hint */
-      --fg:#000;       /* black text */
+      --bg:#f8f8f8;      /* glossy white with slight grey hint */
+      --fg:#000;         /* black text */
       --muted:#666;
-      --fiber-opacity:0.14; /* base visibility for fibers */
+
+      --fiber-opacity:0.14;
+
+      /* Button theme (matte silver) */
+      --btn-fg:#fff;
+      --btn-edge:#c9ccd3;
+      --btn-top:#eef0f4;
+      --btn-mid:#d7dae0;
+      --btn-bot:#c3c7cf;
+
+      /* Pulse colors inside letters */
+      --pulse-core:#ff2a2a;
+      --pulse-soft:#ff8a8a;
     }
+
     *{box-sizing:border-box}
     html,body{
       height:100%;
@@ -27,352 +40,400 @@
       overflow:hidden;
     }
 
-    /* Canvas-based fiber background */
-    .bg-fibers{
-      position:fixed;
-      inset:0;
-      z-index:0;
-      pointer-events:none;
-      display:block;
-    }
+    /* Canvas-based fiber background (restricted to top & bottom) */
+    .bg-fibers{ position:fixed; inset:0; z-index:0; pointer-events:none; display:block; }
 
     .wrap{
       min-height:100%;
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       padding:24px;
-      position:relative;
-      z-index:1;
+      position:relative; z-index:1;
       text-align:center;
     }
+
     h1{
-      font-size:48px;
-      font-weight:700;
-      line-height:1.1;
-      margin:0 0 20px 0;
-      letter-spacing:.2px;
+      font-size:48px; font-weight:700; line-height:1.1;
+      margin:0 0 20px 0; letter-spacing:.2px;
     }
+
     .lines{
-      font-size:20px;
-      font-weight:400;
-      line-height:1.4;
-      letter-spacing:.2px;
-      display:grid;
-      gap:8px;
+      font-size:20px; font-weight:400; line-height:1.4; letter-spacing:.2px;
+      display:grid; gap:8px; margin-bottom:22px;
     }
-    .hint{
-      margin-top:28px;
-      font-size:14px;
-      color:var(--muted);
-      letter-spacing:.3px;
-    }
+
+    .hint{ margin-top:18px; font-size:14px; color:var(--muted); letter-spacing:.3px; }
+
     .reveal{ animation: glow 800ms ease-out both; }
     @keyframes glow{
       0%{ text-shadow:0 0 0 rgba(0,0,0,0); }
       50%{ text-shadow:0 0 8px rgba(0,0,0,.15); }
       100%{ text-shadow:0 0 0 rgba(0,0,0,0); }
     }
+
+    /* Matte silver button */
+    .cta{
+      --h: 56px;
+      height: var(--h);
+      padding: 0 26px;
+      border-radius: 12px;
+      border: 1px solid var(--btn-edge);
+      display:inline-grid; place-items:center;
+      text-decoration:none; position:relative; isolation:isolate;
+      user-select:none; cursor:pointer; color: var(--btn-fg);
+      background: linear-gradient(180deg, var(--btn-top), var(--btn-mid) 55%, var(--btn-bot));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        inset 0 -1px 0 rgba(0,0,0,0.06),
+        0 10px 22px rgba(0,0,0,0.06);
+    }
+
+    /* Button label container */
+    .btn-label{
+      position:relative;
+      display:inline-flex;
+      gap:0.02em;              /* tighter kerning */
+      align-items:flex-end;
+      line-height:1;
+      font-size:18px;          /* legible size */
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+    }
+
+    /* Per-letter host */
+    .svg-letter{ width:0.62em; height:1.15em; display:inline-block; position:relative; }
+    .svg-letter svg{ display:block; width:100%; height:100%; overflow:visible; }
+
+    /* Base white letter (always visible) */
+    .glyph{ fill:#fff; stroke:#fff; stroke-width:0; paint-order:stroke fill; }
+
+    /* Fiber path inside each glyph */
+    .fiber-path{
+      fill:none; stroke: var(--pulse-core);
+      stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px rgba(255,42,42,0.45))
+              drop-shadow(0 0 7px rgba(255,138,138,0.30));
+      stroke-opacity: 0.36;
+      /* The animation runs continuously; values are set per-path via CSS vars from JS */
+      animation: dashCycle linear var(--dur, 0.8s) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* Dash animation uses a CSS custom property for the start offset */
+    @keyframes dashCycle{
+      from { stroke-dashoffset: var(--start, 0); }
+      to   { stroke-dashoffset: 0; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Canvas: static wavy dark-gray fibers + red neon-ish pulses (FIFO, one at a time, uniform speed) -->
-  <canvas class="bg-fibers" id="fibers"></canvas>
+  <!-- Canvas: top & bottom fibers only -->
+  <canvas class="bg-fibers" id="fibers" aria-hidden="true"></canvas>
 
   <main class="wrap">
     <section aria-labelledby="site-title">
-      <h1 id="site-title">FiberMind.AI</h1>
-      <div class="lines" aria-live="polite">
+    <h1 id="site-title" class="decrypt" data-final="FiberMind.AI"></h1> <div class="lines" aria-live="polite">
         <p class="decrypt" data-final="We’re currently busy building"></p>
-        <p class="decrypt" data-final="The First Foundational AI For Fiber Sensing"></p>
-        <p class="decrypt" data-final="Interested?  deep.desai@fibermind.ai"></p
+        <p class="decrypt" data-final="the first foundational ai for fiber sensing"></p>
       </div>
+
+      <a class="cta" href="contact.html" aria-label="Get in touch via contact form">
+        <span class="btn-label" id="ctaLabel">Get in touch</span>
+      </a>
+
       <p class="hint" aria-hidden="true">© FiberMind.AI</p>
     </section>
   </main>
 
   <script>
-    // ---------------------------------------------
-    // Static wavy fibers + FIFO pulse (uniform speed)
-    // Pulses made smaller & more background-oriented.
-    // ---------------------------------------------
+    // ============================================================
+    // 1) BACKGROUND FIBERS (top & bottom) with FIFO red pulses
+    // ============================================================
     (function(){
       const canvas = document.getElementById('fibers');
       const ctx = canvas.getContext('2d');
-
       let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
       let W = 0, H = 0;
 
       function resize(){
-        W = window.innerWidth;
-        H = window.innerHeight;
+        W = window.innerWidth; H = window.innerHeight;
         canvas.width  = Math.floor(W * DPR);
         canvas.height = Math.floor(H * DPR);
         canvas.style.width  = W + 'px';
         canvas.style.height = H + 'px';
         ctx.setTransform(DPR,0,0,DPR,0,0);
-        buildStaticPaths(); // rebuild fiber geometry on resize so it stays crisp
+        buildStaticPaths();
       }
       window.addEventListener('resize', resize, { passive:true });
 
-      // --------- TUNING KNOBS ----------
-      const PULSE_SPEED = 1.28;   // fraction of the viewport width per second (uniform speed for ALL pulses)
-      const queueGapMs  = 350;    // wait between pulses after one exits (per fiber, FIFO)
-      // ---------------------------------
+      const PULSE_SPEED = 1.28;  // width/sec
+      const queueGapMs  = 350;
 
-      // Colors
-      const fiberColor = {r:80, g:80, b:80};    // dark gray fibers
-      // Red pulse, but toned down (more background): lower alpha and softer glow
-      const pulseA = {r:255, g:80,  b:80};      // neon red base
-      const pulseB = {r:255, g:0,   b:0};       // deep red
-      const pulseC = {r:255, g:120, b:120};     // pinkish red highlight
+      const fiberOpacity = 0.14;
+      const pulseA={r:255,g:80,b:80}, pulseB={r:255,g:0,b:0}, pulseC={r:255,g:120,b:120};
 
-      const fiberOpacity = 0.14;                // subtle fibers
-      const pulseAlphaLow   = 0.25;             // reduced from ~0.45
-      const pulseAlphaHigh  = 0.60;             // reduced from ~1.00
-      const pulseGlowAlpha  = 0.35;             // softer outer glow
-      const pulseGlowBlur   = 6;                // smaller blur
-      const pulseThicknessBoost = 1.0;          // thinner streak (was +2); ~half look
+      function lerp(a,b,t){ return a+(b-a)*t; }
 
-      function lerp(a,b,t){ return a + (b-a)*t; }
+      const TOP_MIN=0.08, TOP_MAX=0.28, BOT_MIN=0.72, BOT_MAX=0.92;
+      const TOP_COUNT=5, BOT_COUNT=5, N=TOP_COUNT+BOT_COUNT;
+      const thicknessMin=0.8, thicknessMax=1.4;
 
-      // Fiber shape parameters (static, wavy)
-      const N = 9;                  // number of fibers
-      const thicknessMin = 0.8;     // px
-      const thicknessMax = 1.4;     // px
-      const amps = [];              // per-fiber amplitude (px)
-      const freqs = [];             // per-fiber frequency (spatial)
-      const phases = [];            // per-fiber initial phase
-      const baseYs = [];            // per-fiber baseline y (px)
-      const thicknesses = [];
-      const sampleX = [];           // shared sample X positions for path rendering
-      const pathY = [];             // [fiberIndex][i] -> y for that x sample
+      const amps=[],freqs=[],phases=[],baseYs=[],thicknesses=[];
+      const sampleX=[],pathY=[];
+      const queues=[],active=[],cooldown=[];
 
-      // Pulse queues (FIFO) per fiber
-      const queues = [];            // array of arrays of pulse configs
-      const active = [];            // active pulse per fiber or null
-      const cooldown = [];          // ms delay before next pulse starts
-
-      function makePulse(){
-        // All pulses use the same global speed; vary only length/strength slightly.
-        return {
-          pos: -0.12,                        // start off-screen to the left
-          length: lerp(0.06, 0.09, Math.random()), // slightly shorter to feel smaller
-          strength: lerp(0.55, 0.80, Math.random())
-        };
-      }
+      function makePulse(){ return { pos:-0.12, length: lerp(0.06,0.09,Math.random()), strength: lerp(0.55,0.80,Math.random()) }; }
 
       function buildStaticPaths(){
-        // Seed geometry for static wavy lines
-        amps.length = 0; freqs.length = 0; phases.length = 0; baseYs.length = 0; thicknesses.length = 0;
-        const rng = Math.random;
-        for(let i=0;i<N;i++){
-          const t = i/(N-1);
-          baseYs[i] = (0.18 + 0.64*t) * H;
-          amps[i]   = lerp(10, 20, rng());       // slightly calmer wave height
-          freqs[i]  = lerp(1.1, 1.7, rng());     // spatial frequency
-          phases[i] = rng() * Math.PI * 2;       // static phase
-          thicknesses[i] = lerp(thicknessMin, thicknessMax, rng());
+        amps.length=freqs.length=phases.length=baseYs.length=thicknesses.length=0;
+
+        for(let i=0;i<TOP_COUNT;i++){
+          const t=i/(TOP_COUNT-1||1);
+          baseYs.push(lerp(TOP_MIN,TOP_MAX,t));
+          amps.push(lerp(10,20,Math.random()));
+          freqs.push(lerp(1.1,1.7,Math.random()));
+          phases.push(Math.random()*Math.PI*2);
+          thicknesses.push(lerp(thicknessMin,thicknessMax,Math.random()));
+        }
+        for(let i=0;i<BOT_COUNT;i++){
+          const t=i/(BOT_COUNT-1||1);
+          baseYs.push(lerp(BOT_MIN,BOT_MAX,t));
+          amps.push(lerp(10,20,Math.random()));
+          freqs.push(lerp(1.1,1.7,Math.random()));
+          phases.push(Math.random()*Math.PI*2);
+          thicknesses.push(lerp(thicknessMin,thicknessMax,Math.random()));
         }
 
-        // Build sampled X coordinates and per-fiber Y paths
-        const samples = Math.max(160, Math.floor(W/10)); // decent resolution
-        sampleX.length = 0;
-        for(let i=0;i<=samples;i++){
-          sampleX.push((i/samples) * W);
-        }
-        pathY.length = 0;
-        for(let f=0; f<N; f++){
-          const row = [];
+        const samples=Math.max(160,Math.floor(W/10));
+        sampleX.length=0;
+        for(let i=0;i<=samples;i++) sampleX.push((i/samples)*W);
+
+        pathY.length=0;
+        for(let f=0;f<N;f++){
+          const row=[];
           for(let i=0;i<sampleX.length;i++){
-            const x = sampleX[i];
-            // Two-harmonic static wave for glassy feel
-            const y = baseYs[f]
-              + amps[f] * Math.sin((2*Math.PI/W) * freqs[f] * x + phases[f])
-              + 0.5*amps[f] * Math.sin((2*Math.PI/W) * freqs[f] * 0.5 * x + phases[f]*0.8 + 1.7);
+            const x=sampleX[i];
+            const y=(baseYs[f]*H)
+              + amps[f]*Math.sin((2*Math.PI/W)*freqs[f]*x+phases[f])
+              + 0.5*amps[f]*Math.sin((2*Math.PI/W)*freqs[f]*0.5*x+phases[f]*0.8+1.7);
             row.push(y);
           }
           pathY.push(row);
         }
 
-        // Initialize queues once
-        if (queues.length === 0){
-          for(let f=0; f<N; f++){
-            queues[f] = [makePulse(), makePulse(), makePulse()]; // a few queued pulses per fiber
-            active[f] = null;
-            cooldown[f] = 0;
+        if(queues.length===0){
+          for(let f=0;f<N;f++){
+            queues[f]=[makePulse(),makePulse(),makePulse()];
+            active[f]=null; cooldown[f]=0;
           }
         }
       }
 
-      function yAtFraction(fiberIndex, frac){
-        // frac is 0..1 along width, sample with interpolation from pathY
-        if (frac <= 0) return pathY[fiberIndex][0];
-        if (frac >= 1) return pathY[fiberIndex][pathY[fiberIndex].length-1];
-        const idx = frac * (pathY[fiberIndex].length-1);
-        const i0 = Math.floor(idx);
-        const i1 = Math.min(i0+1, pathY[fiberIndex].length-1);
-        const t  = idx - i0;
-        return pathY[fiberIndex][i0]*(1-t) + pathY[fiberIndex][i1]*t;
+      function yAt(fiberIndex, frac){
+        if(frac<=0) return pathY[fiberIndex][0];
+        if(frac>=1) return pathY[fiberIndex][pathY[fiberIndex].length-1];
+        const idx=frac*(pathY[fiberIndex].length-1);
+        const i0=Math.floor(idx), i1=Math.min(i0+1,pathY[fiberIndex].length-1);
+        const t=idx-i0;
+        return pathY[fiberIndex][i0]*(1-t)+pathY[fiberIndex][i1]*t;
       }
 
       function drawFiberLine(fiberIndex){
         ctx.beginPath();
-        const yrow = pathY[fiberIndex];
-        ctx.moveTo(sampleX[0], yrow[0]);
-        for(let i=1;i<sampleX.length;i++){
-          ctx.lineTo(sampleX[i], yrow[i]);
-        }
-        ctx.strokeStyle = `rgba(80,80,80,${parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fiber-opacity')) || 0.14})`;
-        ctx.lineWidth = thicknesses[fiberIndex];
-        ctx.lineCap = 'round';
-        ctx.shadowColor = 'rgba(0,0,0,0)';
-        ctx.shadowBlur = 0;
+        const yrow=pathY[fiberIndex];
+        ctx.moveTo(sampleX[0],yrow[0]);
+        for(let i=1;i<sampleX.length;i++) ctx.lineTo(sampleX[i],yrow[i]);
+        ctx.strokeStyle=`rgba(80,80,80,${parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fiber-opacity'))||0.14})`;
+        ctx.lineWidth=thicknesses[fiberIndex];
+        ctx.lineCap='round';
         ctx.stroke();
       }
 
-      function drawPulse(fiberIndex, p, dt){
-        // p.pos is 0..1 along width; we draw a streak [x0..x1] along the static path
-        p.pos += PULSE_SPEED * dt; // uniform speed for ALL pulses
-        const half = (p.length) * 0.5;
-        const x0f = p.pos - half;
-        const x1f = p.pos + half;
+      function drawPulse(fiberIndex,p,dt){
+        p.pos+=PULSE_SPEED*dt;
+        const half=p.length*0.5;
+        const x0f=p.pos-half, x1f=p.pos+half;
+        if(x0f>1.02) return 'done';
+        const vis0=Math.max(0,x0f), vis1=Math.min(1,x1f);
+        if(vis1<=0||vis0>=1) return;
 
-        // If completely offscreen to the right, signal completion
-        if (x0f > 1.02) return 'done';
+        const x0=vis0*W, x1=vis1*W;
+        const y0=yAt(fiberIndex,vis0), y1=yAt(fiberIndex,vis1);
+        const grad=ctx.createLinearGradient(x0,y0,x1,y1);
+        grad.addColorStop(0.00,`rgba(${pulseA.r},${pulseA.g},${pulseA.b},0)`);
+        grad.addColorStop(0.25,`rgba(${pulseA.r},${pulseA.g},${pulseA.b},0.25)`);
+        grad.addColorStop(0.50,`rgba(${pulseC.r},${pulseC.g},${pulseC.b},0.60)`);
+        grad.addColorStop(0.75,`rgba(${pulseA.r},${pulseA.g},${pulseA.b},0.25)`);
+        grad.addColorStop(1.00,`rgba(${pulseB.r},${pulseB.g},${pulseB.b},0)`);
+        ctx.strokeStyle=grad;
+        ctx.lineWidth=Math.max(1.4,thicknesses[fiberIndex]+1.0);
+        ctx.lineCap='round';
+        ctx.shadowColor='rgba(255,0,0,0.35)';
+        ctx.shadowBlur=6;
 
-        // Clamp visible part and skip if invisible
-        const vis0 = Math.max(0, x0f);
-        const vis1 = Math.min(1, x1f);
-        if (vis1 <= 0 || vis0 >= 1) return;
-
-        const x0 = vis0 * W;
-        const x1 = vis1 * W;
-
-        // Build gradient along the streak (lower alphas to push into background)
-        const y0 = yAtFraction(fiberIndex, vis0);
-        const y1 = yAtFraction(fiberIndex, vis1);
-        const grad = ctx.createLinearGradient(x0, y0, x1, y1);
-
-        grad.addColorStop(0.00, `rgba(${pulseA.r},${pulseA.g},${pulseA.b},0)`);
-        grad.addColorStop(0.25, `rgba(${pulseA.r},${pulseA.g},${pulseA.b},${pulseAlphaLow * p.strength})`);
-        grad.addColorStop(0.50, `rgba(${pulseC.r},${pulseC.g},${pulseC.b},${pulseAlphaHigh * p.strength})`);
-        grad.addColorStop(0.75, `rgba(${pulseA.r},${pulseA.g},${pulseA.b},${pulseAlphaLow * p.strength})`);
-        grad.addColorStop(1.00, `rgba(${pulseB.r},${pulseB.g},${pulseB.b},0)`);
-
-        ctx.strokeStyle = grad;
-        // ~half the prior thickness
-        ctx.lineWidth = Math.max(1.4, thicknesses[fiberIndex] + pulseThicknessBoost);
-        ctx.lineCap = 'round';
-        ctx.shadowColor = `rgba(255,0,0,${pulseGlowAlpha})`;
-        ctx.shadowBlur = pulseGlowBlur;
-
-        // Draw as a segmented polyline following the path
         ctx.beginPath();
-        const segs = 28;
+        const segs=28;
         for(let i=0;i<=segs;i++){
-          const f = vis0 + (i/segs)*(vis1 - vis0);
-          const x = f * W;
-          const y = yAtFraction(fiberIndex, f);
+          const f=vis0+(i/segs)*(vis1-vis0);
+          const x=f*W, y=yAt(fiberIndex,f);
           if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
         }
         ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur=0;
       }
 
       function stepPulses(dtMs){
-        const dt = dtMs / 1000; // seconds
-        // Manage FIFO logic per fiber: only one active pulse at a time
-        for(let f=0; f<N; f++){
-          if (active[f]){
-            const res = drawPulse(f, active[f], dt);
-            if (res === 'done'){
-              active[f] = null;
-              cooldown[f] = queueGapMs; // wait a bit before next pulse
-            }
-          } else if (cooldown[f] > 0){
-            cooldown[f] -= dtMs;
-            if (cooldown[f] < 0) cooldown[f] = 0;
-          } else if (queues[f].length > 0){
-            // Pop next pulse and activate (FIFO)
-            const next = queues[f].shift();
-            // start from just offscreen left, keep same global speed
-            next.pos = -next.length;
-            active[f] = next;
-            // Refill queue so pulses keep coming in FIFO order
+        const dt=dtMs/1000;
+        for(let f=0;f<N;f++){
+          if(active[f]){
+            const res=drawPulse(f,active[f],dt);
+            if(res==='done'){ active[f]=null; cooldown[f]=queueGapMs; }
+          } else if(cooldown[f]>0){
+            cooldown[f]-=dtMs; if(cooldown[f]<0) cooldown[f]=0;
+          } else if(queues[f].length>0){
+            const next=queues[f].shift();
+            next.pos=-next.length;
+            active[f]=next;
             queues[f].push(makePulse());
           }
         }
       }
 
-      // Build once and start loop
       resize();
-      let last = performance.now();
+      let last=performance.now();
       function loop(ts){
-        const now = ts;
-        const dtMs = Math.min(50, now - last); // cap delta for stability
-        last = now;
-
-        // Clear frame
+        const dtMs=Math.min(50, ts-last); last=ts;
         ctx.clearRect(0,0,W,H);
-
-        // Draw static fibers
-        for(let f=0; f<N; f++) drawFiberLine(f);
-
-        // Advance and draw pulses (FIFO, uniform speed)
+        for(let f=0;f<N;f++) drawFiberLine(f);
         stepPulses(dtMs);
-
         requestAnimationFrame(loop);
       }
       requestAnimationFrame(loop);
     })();
 
-    // ---------------------------------------
-    // Slow decrypt effect — all lines together
-    // ---------------------------------------
+    // ============================================================
+    // 2) DECRYPT TEXT
+    // ============================================================
     (function () {
-      const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()[]{}<>?/\\|~";
-      const lines = Array.from(document.querySelectorAll(".decrypt"));
-      const stepDelay = 70;    // frame interval (ms)
-      const perCharSteps = 18; // scramble frames per character
+      const charset="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()[]{}<>?/\\|~";
+      const lines=[...document.querySelectorAll(".decrypt")];
+      const stepDelay=70, perCharSteps=12;
 
-      function scrambleTo(element, finalText) {
-        const length = finalText.length;
-        let frame = 0;
-        return new Promise((resolve) => {
-          const timer = setInterval(() => {
-            const progress = frame / perCharSteps;
-            const cutoff = Math.floor(progress * length);
-            const out = Array.from({ length }, (_, idx) => {
-              if (idx <= cutoff) return finalText[idx];
-              const ch = finalText[idx];
-              return ch === " " ? " " : charset[Math.floor(Math.random() * charset.length)];
-            }).join("");
-
-            element.textContent = out;
+      function scrambleTo(el, finalText){
+        const len=finalText.length; let frame=0;
+        return new Promise((resolve)=>{
+          const timer=setInterval(()=>{
+            const progress=frame/perCharSteps;
+            const cutoff=Math.floor(progress*len);
+            el.textContent=[...finalText].map((ch,i)=> i<=cutoff ? finalText[i] : (ch===" "?" ":"".padEnd(1,charset[Math.floor(Math.random()*charset.length)]))).join("");
             frame++;
-
-            if (frame > perCharSteps) {
-              element.textContent = finalText;
-              element.classList.add("reveal");
-              clearInterval(timer);
-              resolve();
-            }
-          }, stepDelay);
+            if(frame>perCharSteps){ el.textContent=finalText; el.classList.add("reveal"); clearInterval(timer); resolve(); }
+          },stepDelay);
         });
       }
-
-      (async function runTogether() {
-        lines.forEach(el => {
-          const finalText = el.getAttribute("data-final") || "";
-          el.textContent = finalText.split("")
-            .map(ch => ch === " " ? " " : charset[Math.floor(Math.random() * charset.length)])
-            .join("");
+      (async function runTogether(){
+        lines.forEach(el=>{
+          const t=el.getAttribute("data-final")||"";
+          el.textContent=[...t].map(ch=> ch===" " ? " " : charset[Math.floor(Math.random()*charset.length)]).join("");
         });
-        await Promise.all(
-          lines.map(el => scrambleTo(el, el.getAttribute("data-final") || ""))
-        );
+        await Promise.all(lines.map(el=>scrambleTo(el,el.getAttribute("data-final")||"")));
       })();
+    })();
+
+    // ============================================================
+    // 3) BUTTON LABEL LETTER-FIBERS (SVG) — AUTO LOOP
+    // ============================================================
+    (async function(){
+      // Wait for fonts so SVG text renders right
+      if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(e){} }
+
+      const labelEl = document.getElementById('ctaLabel');
+      const text = labelEl.textContent;
+      labelEl.textContent = '';
+
+      // ------- SETTINGS -------
+      const FONT_FAMILY = 'League Spartan, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+      const VIEW_W = 100, VIEW_H = 130;
+      const FONT_SIZE = 110;
+      const Y_BASE = 98;
+
+      const PULSE_DURATION = 0.8;  // seconds per letter (requested)
+      const STAGGER = 0.10;        // delay between letters
+      const DASH_WIN = 18;         // visible dash length
+      // ------------------------
+
+      function buildLetterSVG(ch, index){
+        if (ch === ' ') {
+          const spacer = document.createElement('span');
+          spacer.className = 'svg-letter';
+          spacer.style.width = '0.42em';
+          return spacer;
+        }
+        const host = document.createElement('span');
+        host.className = 'svg-letter';
+
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS,'svg');
+        svg.setAttribute('viewBox', `0 0 ${VIEW_W} ${VIEW_H}`);
+        svg.setAttribute('aria-hidden','true');
+
+        const defs = document.createElementNS(svgNS,'defs');
+        const id = `g${index}-${Math.random().toString(36).slice(2,7)}`;
+        const clipId = `clip-${id}`;
+
+        const glyphText = document.createElementNS(svgNS,'text');
+        glyphText.setAttribute('x', String(VIEW_W/2));
+        glyphText.setAttribute('y', String(Y_BASE));
+        glyphText.setAttribute('text-anchor','middle');
+        glyphText.setAttribute('font-family', FONT_FAMILY);
+        glyphText.setAttribute('font-size', String(FONT_SIZE));
+        glyphText.setAttribute('font-weight','800');
+        glyphText.textContent = ch;
+
+        const clip = document.createElementNS(svgNS,'clipPath');
+        clip.setAttribute('id', clipId);
+        clip.appendChild(glyphText.cloneNode(true));
+        defs.appendChild(clip);
+
+        const midX = VIEW_W/2;
+        const top = -20, bottom = VIEW_H + 20, amp = 10;
+        const path = document.createElementNS(svgNS,'path');
+        path.setAttribute('d',
+          `M ${midX},${top}
+           C ${midX-amp},${VIEW_H*0.15} ${midX+amp},${VIEW_H*0.35} ${midX},${VIEW_H*0.50}
+           C ${midX-amp},${VIEW_H*0.65} ${midX+amp},${VIEW_H*0.85} ${midX},${bottom}`
+        );
+        path.setAttribute('class','fiber-path');
+        path.setAttribute('clip-path', `url(#${clipId})`);
+        path.style.strokeDasharray = '0 1';
+        path.style.strokeDashoffset = '0';
+
+        svg.appendChild(defs);
+
+        const glyph = glyphText.cloneNode(true);
+        glyph.setAttribute('class','glyph');
+        svg.appendChild(glyph);
+        svg.appendChild(path);
+
+        host.appendChild(svg);
+
+        // After attaching, compute length & set animation custom properties
+        requestAnimationFrame(()=>{
+          const L = path.getTotalLength();
+          const dash = Math.max(8, Math.min(L*0.18, DASH_WIN));
+          path.style.strokeDasharray = `${dash} ${Math.max(1,L)}`;
+          path.style.setProperty('--start', `${L + dash}`);     // where each cycle begins (above glyph)
+          path.style.setProperty('--dur', `${PULSE_DURATION}s`);
+          path.style.setProperty('--delay', `${index * STAGGER}s`);
+        });
+
+        return host;
+      }
+
+      const frag = document.createDocumentFragment();
+      [...text].forEach((ch, i) => frag.appendChild(buildLetterSVG(ch, i)));
+      labelEl.appendChild(frag);
     })();
   </script>
 </body>
