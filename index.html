@@ -10,14 +10,14 @@
 
   <style>
     :root{
-      --bg:#f8f8f8;      /* glossy white with slight grey hint */
-      --fg:#000;         /* black text */
-      --muted:#666;
+      --bg:#f8f8f8;          /* glossy white with slight grey hint */
+      --fg:#0E3A74;          /* dark globe blue */
+      --muted:#0E3A74;       /* keep muted in theme for consistency */
 
       --fiber-opacity:0.14;
 
       /* Button theme (matte silver) */
-      --btn-fg:#fff;
+      --btn-fg:var(--fg);    /* button text now uses dark blue */
       --btn-edge:#c9ccd3;
       --btn-top:#eef0f4;
       --btn-mid:#d7dae0;
@@ -51,24 +51,32 @@
       text-align:center;
     }
 
-    h1{
-      font-size:48px; font-weight:700; line-height:1.1;
-      margin:0 0 20px 0; letter-spacing:.2px;
-    }
+/* Spinning globe above the hero */
+.globe-wrap{
+  display:grid;
+  place-items:center;
+  margin:0 0 18px 0;
+  perspective: 900px;                 /* add 3D depth */
+}
 
-    .lines{
-      font-size:20px; font-weight:400; line-height:1.4; letter-spacing:.2px;
-      display:grid; gap:8px; margin-bottom:22px;
-    }
+.hero-globe{
+  width:min(40vmin,260px);
+  height:auto;
+  animation: spinY 30s linear infinite;  /* rotate around Y axis */
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.08));
+}
 
-    .hint{ margin-top:18px; font-size:14px; color:var(--muted); letter-spacing:.3px; }
+@keyframes spinY{
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }   /* use -360deg if you prefer the opposite direction */
+}
 
-    .reveal{ animation: glow 800ms ease-out both; }
-    @keyframes glow{
-      0%{ text-shadow:0 0 0 rgba(0,0,0,0); }
-      50%{ text-shadow:0 0 8px rgba(0,0,0,.15); }
-      100%{ text-shadow:0 0 0 rgba(0,0,0,0); }
-    }
+@media (prefers-reduced-motion: reduce){
+  .hero-globe{ animation: none; }
+}
 
     /* Matte silver button */
     .cta{
@@ -96,7 +104,7 @@
       line-height:1;
       font-size:24px;          /* legible size */
       font-weight:800;
-      color:#fff;
+      color:var(--fg);         /* now dark blue */
       white-space:nowrap;
     }
 
@@ -104,8 +112,8 @@
     .svg-letter{ width:0.62em; height:1.15em; display:inline-block; position:relative; }
     .svg-letter svg{ display:block; width:100%; height:100%; overflow:visible; }
 
-    /* Base white letter (always visible) */
-    .glyph{ fill:#fff; stroke:#fff; stroke-width:0; paint-order:stroke fill; }
+    /* Base letter inherits currentColor from .btn-label */
+    .glyph{ fill:currentColor; stroke:currentColor; stroke-width:0; paint-order:stroke fill; }
 
     /* Fiber path inside each glyph */
     .fiber-path{
@@ -120,10 +128,7 @@
     }
 
     /* Dash animation uses a CSS custom property for the start offset */
-    @keyframes dashCycle{
-      from { stroke-dashoffset: var(--start, 0); }
-      to   { stroke-dashoffset: 0; }
-    }
+    @keyframes dashCycle{ from{stroke-dashoffset:var(--start,0)} to{stroke-dashoffset:0} }
   </style>
 </head>
 <body>
@@ -133,7 +138,15 @@
 
   <main class="wrap">
     <section aria-labelledby="site-title">
-    <h1 id="site-title" class="decrypt" data-final="FiberMind.AI"></h1> <div class="lines" aria-live="polite">
+
+      <!-- Spinning globe image: put your file at assets/earth.webp -->
+      <div class="globe-wrap">
+        <img class="hero-globe" src="assets/earth.webp" alt="Spinning Earth globe" />
+      </div>
+
+      <h1 id="site-title" class="decrypt" data-final="FiberMind.AI"></h1>
+
+      <div class="lines" aria-live="polite">
         <p class="decrypt" data-final="We’re Currently Busy Building"></p>
         <p class="decrypt" data-final="The First Foundational AI For Fiber Sensing"></p>
       </div>
