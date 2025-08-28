@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FiberMind.AI</title>
 
-  <!-- League Spartan font (site-wide) -->
+  <!-- League Spartan (site-wide fallback) -->
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* Optional: Palantir "Hero" font placeholder.
-       Put your licensed file at assets/hero.woff2 or update the URL below.
-       If not present, the button text will fall back to League Spartan. */
+    /* Optional: Palantir "Hero" font for the button.
+       Put your licensed file at assets/hero.woff2.
+       If not present, the button text falls back to League Spartan. */
     @font-face{
       font-family: "PalantirHero";
       src: url("assets/hero.woff2") format("woff2");
@@ -24,12 +24,11 @@
       --bg:#03093c;     /* site background */
       --fg:#ffffff;     /* site text color */
       --btn-bg:#ffffff; /* button background (white) */
-      --btn-fg:#03093c; /* button text */
-      --pulse-core:#ff2a2a;
-      --pulse-soft:#ff8a8a;
+      --btn-fg:#03093c; /* button text color */
+      --pulse-core:#ff2a2a; /* inner pulse color for CTA letters */
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
     html,body{
       height:100%;
       margin:0;
@@ -88,37 +87,36 @@
       100%{ text-shadow:0 0 0 rgba(255,255,255,0); }
     }
 
-    /* Minimal white CTA */
+    /* Minimal white CTA — smaller, fits text without being snug */
     .cta{
-      --h: 56px;
-      height: var(--h);
-      padding: 0 28px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.25);
+      height:auto;
+      padding:10px 18px;            /* tighter but breathable */
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.25);
       display:inline-grid; place-items:center;
       text-decoration:none; position:relative; isolation:isolate;
       user-select:none; cursor:pointer;
-      background: var(--btn-bg);        /* pure white button */
-      color: var(--btn-fg);             /* #03093c text */
+      background:var(--btn-bg);
+      color:var(--btn-fg);
       box-shadow:
-        0 8px 24px rgba(0,0,0,0.35),
+        0 6px 16px rgba(0,0,0,0.25),
         inset 0 1px 0 rgba(255,255,255,0.85);
       transition: transform .05s ease, box-shadow .2s ease, filter .2s ease;
     }
     .cta:hover{ filter:saturate(1.02) brightness(1.02); }
-    .cta:active{ transform: translateY(1px); }
+    .cta:active{ transform:translateY(1px); }
 
-    /* Button label: use PalantirHero if available, else fallback */
+    /* Button label uses PalantirHero if available */
     .btn-label{
       position:relative;
       display:inline-flex;
       gap:0.12em;          /* clean spacing between letters */
       align-items:center;
       line-height:1.2;
-      font-size:22px;      /* slightly smaller for minimalism */
+      font-size:20px;      /* slightly smaller for minimalism */
       font-weight:400;     /* not bold */
       letter-spacing:0.08em;
-      color:var(--btn-fg);
+      color:var(--btn-fg); /* #03093c */
       white-space:nowrap;
       font-family:"PalantirHero","League Spartan",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
@@ -130,14 +128,13 @@
     /* Base letter inherits currentColor (button text color) */
     .glyph{ fill:currentColor; stroke:currentColor; stroke-width:0; paint-order:stroke fill; }
 
-    /* Fiber-like pulse inside each letter (red) */
+    /* Fiber-like pulse inside each letter (thin, subtle) */
     .fiber-path{
       fill:none; stroke: var(--pulse-core);
-      stroke-width: 2.0; stroke-linecap: round; stroke-linejoin: round;
-      filter: drop-shadow(0 0 4px rgba(255,42,42,0.45))
-              drop-shadow(0 0 7px rgba(255,138,138,0.30));
-      stroke-opacity: 0.36;
-      animation: dashCycle linear var(--dur, 0.8s) infinite;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px rgba(255,42,42,0.35));
+      stroke-opacity: 0.32;
+      animation: dashCycle linear var(--dur, 0.9s) infinite;
       animation-delay: var(--delay, 0s);
     }
     @keyframes dashCycle{ from{stroke-dashoffset:var(--start,0)} to{stroke-dashoffset:0} }
@@ -149,7 +146,7 @@
 
       <!-- Globe GIF -->
       <div class="globe-wrap">
-        <!-- Put your file at /assets/globe.gif -->
+        <!-- Ensure this file exists at /assets/globe.gif -->
         <img class="hero-globe" src="assets/globe.gif" alt="Spinning Earth" />
       </div>
 
@@ -208,9 +205,9 @@
       const FONT_SIZE = 110;
       const Y_BASE = 98;
 
-      const PULSE_DURATION = 0.8;  // seconds per letter
+      const PULSE_DURATION = 0.9;  // seconds per letter (slightly slower for minimal feel)
       const STAGGER = 0.10;        // delay between letters
-      const DASH_WIN = 18;         // visible dash length
+      const DASH_WIN = 16;         // visible dash length (slightly thinner)
 
       function buildLetterSVG(ch, index){
         if (ch === ' ') {
