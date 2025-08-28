@@ -140,6 +140,33 @@
     @keyframes dashCycle{ from{stroke-dashoffset:var(--start,0)} to{stroke-dashoffset:0} }
   </style>
 </head>
+  <script>
+(  function(){
+      const img = document.querySelector('.hero-globe');
+      if (!img) return;
+      // make the box visible so you know where it should be
+      img.style.outline = '1px dashed rgba(255,255,255,.35)';
+      const note = document.createElement('div');
+      note.style.cssText = 'margin-top:8px;font:14px/1.4 system-ui;color:#fff;opacity:.85;';
+      img.parentElement.appendChild(note);
+
+      function report(state){
+        note.textContent = `globe.gif ${state} — src: ${img.getAttribute('src')} — size: ${img.naturalWidth}×${img.naturalHeight}`;
+                            }
+
+      img.addEventListener('load',  () => report('loaded ✓'));
+      img.addEventListener('error', () => report('FAILED ✗ (check path/name/case)'));
+
+      // If it was cached as a 404, force reload once:
+      if (img.complete && img.naturalWidth === 0) {
+        const url = new URL(img.src);
+        url.searchParams.set('t', Date.now());
+        img.src = url.toString();
+      } else if (img.complete) {
+      report('loaded from cache ✓');
+          }
+})();
+</script>
 <body>
   <main class="wrap">
     <section aria-labelledby="site-title">
