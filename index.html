@@ -171,11 +171,19 @@
   <main class="wrap">
     <section aria-labelledby="site-title">
 
-      <!-- Globe GIF -->
-      <div class="globe-wrap">
-        <!-- Ensure this file exists at /assets/globe.gif -->
-      <img class="hero-globe" src="assets/globe.gif?v=3" alt="Spinning Earth" width="320" height="320" />
-      </div>
+<div class="globe-wrap">
+  <video class="hero-globe" autoplay muted loop playsinline
+         width="320" height="320"
+         style="display:block;border-radius:50%;box-shadow:0 10px 22px rgba(0,0,0,.35)"
+         poster=""  >
+    <!-- Your WEBM (note the capital G and exact filename) -->
+    <source src="assets/Gglobe.webm?v=1" type="video/webm" />
+    <!-- Optional future fallback:
+    <source src="assets/globe.mp4?v=1" type="video/mp4" />
+    <img src="assets/globe-anim.gif?v=1" alt="Spinning Earth" />
+    -->
+  </video>
+</div>
 
       <h1 id="site-title" class="decrypt" data-final="FiberMind.AI"></h1>
 
