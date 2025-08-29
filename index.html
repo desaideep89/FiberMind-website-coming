@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FiberMind.AI</title>
 
-  <!-- League Spartan (site-wide fallback) -->
+  <!-- Site font (fallbacks) -->
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* Optional: Palantir "Hero" font for the CTA (place your licensed file at assets/hero.woff2) */
+    /* Optional: Palantir "Hero" font for CTA (place at assets/hero.woff2 if you have it) */
     @font-face{
       font-family: "PalantirHero";
       src: url("assets/hero.woff2") format("woff2");
@@ -21,9 +21,9 @@
     :root{
       --bg:#03093c;     /* site background */
       --fg:#ffffff;     /* site text color */
-      --btn-bg:#ffffff; /* button background (white) */
+      --btn-bg:#ffffff; /* button background */
       --btn-fg:#03093c; /* button text color */
-      --pulse-core:#ff2a2a; /* inner pulse color for CTA letters */
+      --pulse-core:#ff2a2a; /* CTA inner pulse */
     }
 
     *{ box-sizing:border-box; }
@@ -46,23 +46,15 @@
       text-align:center;
     }
 
-    /* --- Globe video with circular mask (no black halo) --- */
+    /* Globe (no mask, no blend) */
     .globe-wrap{ display:grid; place-items:center; margin:0 0 18px 0; }
-    .globe-mask{
+    .hero-globe{
       width:min(42vmin, 300px);
       height:min(42vmin, 300px);
-      border-radius:50%;
-      overflow:hidden;
-      background:#03093c;             /* match page bg */
-      box-shadow:0 10px 22px rgba(0,0,0,.35);
-    }
-    .hero-globe{
-      width:115%;
-      height:115%;
-      object-fit:cover;
-      transform:translate(-7.5%,-7.5%); /* center after zoom */
       display:block;
-      background:#03093c;             /* safety */
+      object-fit:contain;      /* preserves aspect */
+      background:#03093c;      /* matches page bg behind video frame */
+      border:none;
     }
 
     h1{
@@ -94,10 +86,10 @@
       100%{ text-shadow:0 0 0 rgba(255,255,255,0); }
     }
 
-    /* --- Minimal white CTA — sized to fit text --- */
+    /* Minimal white CTA, sized to fit text */
     .cta{
       height:auto;
-      padding:10px 18px;
+      padding:10px 18px;              /* slim & breathable */
       border-radius:8px;
       border:1px solid rgba(255,255,255,0.25);
       display:inline-grid; place-items:center;
@@ -132,10 +124,10 @@
     .svg-letter{ width:0.62em; height:1.15em; display:inline-block; position:relative; }
     .svg-letter svg{ display:block; width:100%; height:100%; overflow:visible; }
 
-    /* Base letter inherits currentColor (button text color) */
+    /* Base letter inherits currentColor */
     .glyph{ fill:currentColor; stroke:currentColor; stroke-width:0; paint-order:stroke fill; }
 
-    /* Fiber-like pulse inside each letter (thin, subtle) */
+    /* Thin red pulse inside each letter */
     .fiber-path{
       fill:none; stroke: var(--pulse-core);
       stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
@@ -151,12 +143,15 @@
   <main class="wrap">
     <section aria-labelledby="site-title">
 
-      <!-- Globe (WEBM) with circular mask -->
+      <!-- GLOBE: place your working files in /assets.
+           Order: MP4 (iOS-friendly) → WebM (alpha for desktop) → <img> fallback.
+           Replace the filenames below with your final ones. -->
       <div class="globe-wrap">
-        <div class="globe-mask">
-          <video class="hero-globe" autoplay muted loop playsinline
-                 src="assets/Gglobe.webm?v=2"></video>
-        </div>
+        <video class="hero-globe" autoplay muted loop playsinline>
+          <source src="assets/globe-dark.mp4?v=1" type="video/mp4">
+          <source src="assets/globe-alpha.webm?v=1" type="video/webm">
+          <img src="assets/globe.png" alt="Spinning Earth">
+        </video>
       </div>
 
       <h1 id="site-title" class="decrypt" data-final="FiberMind.AI"></h1>
@@ -175,7 +170,7 @@
   </main>
 
   <script>
-    // ====================== DECRYPT TEXT ======================
+    /* ============ Decrypt Text ============ */
     (function () {
       const charset="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()[]{}<>?/\\|~";
       const lines=[...document.querySelectorAll(".decrypt")];
@@ -202,7 +197,7 @@
       })();
     })();
 
-    // ======== CTA BUTTON LETTER-FIBERS (SVG) — AUTO LOOP ========
+    /* ============ CTA per-letter pulse (auto) ============ */
     (async function(){
       if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(e){} }
       const labelEl = document.getElementById('ctaLabel');
@@ -243,7 +238,7 @@
         glyphText.setAttribute('text-anchor','middle');
         glyphText.setAttribute('font-family', FONT_FAMILY);
         glyphText.setAttribute('font-size', String(FONT_SIZE));
-        glyphText.setAttribute('font-weight','400');
+        glyphText.setAttribute('font-weight','400');  /* minimal, not bold */
         glyphText.textContent = ch;
 
         const clip = document.createElementNS(svgNS,'clipPath');
